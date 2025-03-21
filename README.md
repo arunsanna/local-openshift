@@ -1,4 +1,4 @@
-# OctoShift - OpenShift Local Deployment Manager
+# OpenShift Local Deployment Manager
 
 This project provides a script to manage OpenShift Local (formerly CodeReady Containers/CRC) on your local machine.
 
