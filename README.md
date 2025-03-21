@@ -14,6 +14,8 @@ The `openshift.sh` script offers an interactive way to:
 ## Prerequisites
 
 - macOS or Linux operating system
+- Docker installed and running
+- curl and tar utilities
 - Internet connection
 - 16GB RAM minimum (recommended)
 - 35GB+ of free disk space
@@ -48,10 +50,10 @@ This will present a menu with the following options:
 2. Get download & installation instructions
 3. Setup environment
 4. Start OpenShift cluster
-5. Stop OpenShift cluster
-6. Show cluster status
-7. Open web console
-8. Show cluster info
+5. Show cluster status
+6. Open web console
+7. Show cluster info
+8. Stop OpenShift cluster
 9. Exit
 
 ### Command Line Mode
@@ -88,8 +90,23 @@ The script requires a pull secret from Red Hat:
 3. Download your pull secret
 4. Save it to `$HOME/.crc/pull-secret.json`
 
+## Configuration
+
+The script can use a configuration file named `crc-config.json` in the same directory. Example:
+
+```json
+{
+  "memory": "16384",
+  "cpus": "6",
+  "diskSize": "100"
+}
+```
+
+Without this file, default values will be used.
+
 ## Troubleshooting
 
+- Ensure Docker is installed and running
 - Ensure your machine meets the minimum hardware requirements
 - Verify that your pull secret is correctly saved at `$HOME/.crc/pull-secret.json`
 - Check virtualization is enabled in your BIOS

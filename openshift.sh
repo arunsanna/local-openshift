@@ -36,6 +36,18 @@ check_command() {
     fi
 }
 
+# Check if Docker is running
+check_docker_running() {
+    log_info "Checking if Docker is running..."
+    if docker info &>/dev/null; then
+        log_success "Docker is running"
+        return 0
+    else
+        log_warning "Docker is not running or not installed"
+        return 1
+    fi
+}
+
 # Check prerequisites
 check_prerequisites() {
     log_info "Checking prerequisites..."
@@ -63,6 +75,10 @@ check_prerequisites() {
     check_command curl
     check_command tar
     
+    # Check if Docker is installed and running
+    check_command docker
+    check_docker_running
+    
     # Check if CRC is installed
     if ! command -v crc &> /dev/null; then
         log_warning "OpenShift Local (CRC) is not installed on your system."
@@ -72,31 +88,6 @@ check_prerequisites() {
     else
         log_success "OpenShift Local (CRC) is already installed."
         log_info "Installed version: $(crc version | grep -o 'OpenShift version:.*' | head -1 || crc version | head -1)"
-    fi
-    
-    # Check hardware requirements
-    MEMORY=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}' || sysctl -n hw.memsize 2>/dev/null | awk '{print $1 / 1024}' || echo "unknown")
-    if [[ "$MEMORY" != "unknown" ]]; then
-        MEMORY_GB=$(echo "scale=2; $MEMORY/1024/1024" | bc)
-        if (( $(echo "$MEMORY_GB < 16" | bc -l) )); then
-            log_warning "System has less than 16GB RAM ($MEMORY_GB GB). Performance may be affected."
-        else
-            log_success "System has sufficient memory: $MEMORY_GB GB"
-        fi
-    fi
-    
-    # Check disk space
-    DISK_SPACE=$(df -h . | awk 'NR==2 {print $4}')
-    log_info "Available disk space: $DISK_SPACE"
-    
-    # Check pull secret
-    PULL_SECRET_PATH="$HOME/.crc/pull-secret.json"
-    if [ ! -f "$PULL_SECRET_PATH" ]; then
-        log_warning "Pull secret not found at $PULL_SECRET_PATH"
-        log_info "Please download your pull secret from: https://console.redhat.com/openshift/create/local"
-        log_info "Save it to $PULL_SECRET_PATH before starting the cluster."
-    else
-        log_success "Pull secret found at $PULL_SECRET_PATH"
     fi
     
     log_success "Prerequisites check completed"
@@ -322,10 +313,10 @@ show_menu() {
     echo "  2) Get download & installation instructions"
     echo "  3) Setup environment"
     echo "  4) Start OpenShift cluster"
-    echo "  5) Stop OpenShift cluster"
-    echo "  6) Show cluster status"
-    echo "  7) Open web console"
-    echo "  8) Show cluster info"
+    echo "  5) Show cluster status"
+    echo "  6) Open web console"
+    echo "  7) Show cluster info"
+    echo "  8) Stop OpenShift cluster"
     echo "  9) Exit"
     echo ""
     echo "========================================================"
@@ -346,12 +337,9 @@ show_menu() {
             start_crc
             ;;
         5)
-            stop_crc
-            ;;
-        6)
             status_crc
             ;;
-        7)
+        6)
             if command -v crc &> /dev/null; then
                 log_info "Opening web console..."
                 crc console
@@ -359,7 +347,7 @@ show_menu() {
                 log_error "CRC is not installed"
             fi
             ;;
-        8)
+        7)
             if command -v crc &> /dev/null; then
                 log_info "Cluster information:"
                 echo ""
@@ -368,6 +356,9 @@ show_menu() {
             else
                 log_error "CRC is not installed"
             fi
+            ;;
+        8)
+            stop_crc
             ;;
         9)
             log_info "Exiting..."
